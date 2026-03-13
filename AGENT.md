@@ -17,6 +17,22 @@ This agent is a CLI tool that connects to an LLM API and answers questions using
 - No credit card required
 - Strong tool calling capabilities
 - Fast response times
+This agent is a CLI tool that connects to an LLM API and answers questions using an **agentic loop** with tool support. The agent can read files and list directories to find answers in the project documentation.
+
+## LLM Provider
+
+**Provider:** OpenRouter  
+**Model:** `meta-llama/llama-3.3-70b-instruct:free`  
+**API Base:** `https://openrouter.ai/api/v1`
+
+### Why OpenRouter?
+
+- Free tier available (50 requests/day)
+- No VM setup required
+- OpenAI-compatible API format with tool calling support
+- Good model quality for the lab tasks
+
+> **Note:** For production use with higher rate limits, consider Qwen Code API (1000 requests/day).
 
 ## Architecture
 
@@ -29,6 +45,11 @@ This agent is a CLI tool that connects to an LLM API and answers questions using
 
 2. **Environment Loader**
    - Uses `python-dotenv` to load both env files
+   - Loads environment variables from `.env.agent.secret`
+   - Orchestrates the agentic loop
+
+2. **Environment Loader**
+   - Uses `python-dotenv` to load `.env.agent.secret`
    - Validates that all required variables are present
 
 3. **LLM Client**
@@ -75,6 +96,7 @@ Question → agent.py
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `path` | string | Relative path from project root (e.g., `wiki/git-workflow.md`, `backend/app/main.py`) |
+| `path` | string | Relative path from project root (e.g., `wiki/git-workflow.md`) |
 
 **Returns:** File contents as a string, or an error message if the file doesn't exist.
 
@@ -91,6 +113,7 @@ Question → agent.py
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `path` | string | Relative directory path from project root (e.g., `wiki`, `backend/app`) |
+| `path` | string | Relative directory path from project root (e.g., `wiki`) |
 
 **Returns:** Newline-separated listing of entries, or an error message.
 
@@ -135,6 +158,14 @@ Tools are registered with the LLM using OpenAI-compatible function schemas:
         "body": {"type": "string"}
       },
       "required": ["method", "path"]
+    "name": "read_file",
+    "description": "Read the contents of a file...",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string", "description": "..."}
+      },
+      "required": ["path"]
     }
   }
 }

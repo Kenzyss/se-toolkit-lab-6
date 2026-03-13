@@ -166,60 +166,6 @@ def list_files(path: str) -> str:
         return f"Error listing directory: {e}"
 
 
-def query_api(method: str, path: str, body: str | None = None) -> str:
-    """
-    Call the deployed backend API.
-    
-    Args:
-        method: HTTP method (GET, POST, PUT, DELETE, PATCH)
-        path: API path (e.g., '/items/', '/analytics/completion-rate')
-        body: Optional JSON request body for POST/PUT/PATCH requests
-    
-    Returns:
-        JSON string with status_code and body, or error message.
-    """
-    try:
-        api_config = get_api_config()
-    except SystemExit:
-        return "Error: LMS_API_KEY not configured"
-    
-    url = f"{api_config['base_url']}{path}"
-    headers = {
-        "Authorization": f"Bearer {api_config['api_key']}",
-        "Content-Type": "application/json",
-    }
-    
-    print(f"Calling API: {method} {url}", file=sys.stderr)
-    
-    try:
-        with httpx.Client(timeout=30.0) as client:
-            if method.upper() == "GET":
-                response = client.get(url, headers=headers)
-            elif method.upper() == "POST":
-                response = client.post(url, headers=headers, content=body or "{}")
-            elif method.upper() == "PUT":
-                response = client.put(url, headers=headers, content=body or "{}")
-            elif method.upper() == "DELETE":
-                response = client.delete(url, headers=headers)
-            elif method.upper() == "PATCH":
-                response = client.patch(url, headers=headers, content=body or "{}")
-            else:
-                return f"Error: Unsupported method: {method}"
-            
-            result = {
-                "status_code": response.status_code,
-                "body": response.text,
-            }
-            return json.dumps(result)
-            
-    except httpx.TimeoutException:
-        return json.dumps({"status_code": 0, "body": "Error: API request timed out"})
-    except httpx.ConnectError as e:
-        return json.dumps({"status_code": 0, "body": f"Error: Cannot connect to API: {e}"})
-    except httpx.HTTPError as e:
-        return json.dumps({"status_code": 0, "body": f"Error: HTTP error: {e}"})
-
-
 # Tool schema definitions for the LLM
 
 TOOL_SCHEMAS = [
