@@ -28,19 +28,23 @@ MAX_TOOL_CALLS = 10
 
 
 def load_env() -> None:
-    """Load environment variables from .env.agent.secret and .env.docker.secret."""
-    # Load LLM config from .env.agent.secret
-    agent_env_file = PROJECT_ROOT / ".env.agent.secret"
-    if not agent_env_file.exists():
-        print(f"Error: {agent_env_file} not found", file=sys.stderr)
-        print("Copy .env.agent.example to .env.agent.secret and fill in your credentials", file=sys.stderr)
-        sys.exit(1)
-    load_dotenv(agent_env_file)
+    """
+    Load environment variables from .env files if they exist.
     
-    # Load LMS API key from .env.docker.secret
+    The autochecker injects variables directly into the environment,
+    so files are optional. Local development uses .env files.
+    """
+    # Load from .env.agent.secret if it exists
+    agent_env_file = PROJECT_ROOT / ".env.agent.secret"
+    if agent_env_file.exists():
+        load_dotenv(agent_env_file)
+
+    # Load from .env.docker.secret if it exists
     docker_env_file = PROJECT_ROOT / ".env.docker.secret"
     if docker_env_file.exists():
-        load_dotenv(docker_env_file, override=False)  # Don't override existing
+        load_dotenv(docker_env_file, override=False)
+    
+    # Variables may also be set directly in the environment (autochecker)
 
 
 def get_llm_config() -> dict:
