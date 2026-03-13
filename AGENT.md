@@ -29,7 +29,7 @@ This agent is a CLI tool that connects to an LLM API and answers questions using
 
 - Free tier available (50 requests/day)
 - No VM setup required
-- OpenAI-compatible API format with tool calling support
+- OpenAI-compatible API format
 - Good model quality for the lab tasks
 
 > **Note:** For production use with higher rate limits, consider Qwen Code API (1000 requests/day).
@@ -46,7 +46,7 @@ This agent is a CLI tool that connects to an LLM API and answers questions using
 2. **Environment Loader**
    - Uses `python-dotenv` to load both env files
    - Loads environment variables from `.env.agent.secret`
-   - Orchestrates the agentic loop
+   - Orchestrates the request flow
 
 2. **Environment Loader**
    - Uses `python-dotenv` to load `.env.agent.secret`
@@ -55,7 +55,7 @@ This agent is a CLI tool that connects to an LLM API and answers questions using
 3. **LLM Client**
    - Uses `httpx` for HTTP requests
    - Sends POST requests to `/chat/completions` endpoint
-   - Supports OpenAI-compatible tool calling API
+   - Follows OpenAI-compatible API format
 
 4. **Tools**
    - `read_file`: Read file contents from the project
@@ -277,7 +277,7 @@ uv run agent.py "How many items are in the database?"
 
 ### Error Output (stderr)
 
-All debug and error messages are written to stderr.
+All debug and error messages are written to stderr to keep stdout clean for JSON parsing.
 
 ## Configuration
 
@@ -368,7 +368,7 @@ The `query_api` tool:
 
 ## Testing
 
-Run the regression tests:
+Run the regression test:
 
 ```bash
 uv run pytest tests/test_agent.py -v

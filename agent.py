@@ -1,30 +1,23 @@
 #!/usr/bin/env python3
 """
-Agent CLI - connects to an LLM and answers questions with tool support.
+Agent CLI - connects to an LLM and answers questions.
 
 Usage:
     uv run agent.py "Your question here"
 
 Output (stdout):
-    JSON with "answer", "source", and "tool_calls" fields.
+    JSON with "answer" and "tool_calls" fields.
 
 All debug output goes to stderr.
 """
 
 import json
 import os
-import re
 import sys
-import uuid
 from pathlib import Path
-from typing import Any
 
 import httpx
 from dotenv import load_dotenv
-
-# Constants
-MAX_TOOL_CALLS = 10
-PROJECT_ROOT = Path(__file__).parent
 
 
 def load_env() -> None:
@@ -301,9 +294,10 @@ def call_llm(messages: list[dict], config: dict, tools: list[dict]) -> dict:
     }
     payload = {
         "model": config["model"],
-        "messages": messages,
-        "tools": tools,
-        "tool_choice": "auto",
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant. Answer concisely."},
+            {"role": "user", "content": question},
+        ],
         "temperature": 0.7,
     }
 
@@ -315,20 +309,22 @@ def call_llm(messages: list[dict], config: dict, tools: list[dict]) -> dict:
             response.raise_for_status()
             data = response.json()
 
+            # Extract answer from response
             choices = data.get("choices", [])
             if not choices:
                 print("Error: No choices in LLM response", file=sys.stderr)
-                return {"content": "Error: No response from LLM", "tool_calls": []}
+                sys.exit(1)
 
-            message = choices[0].get("message", {})
-            return {
-                "content": message.get("content"),
-                "tool_calls": message.get("tool_calls", []),
-            }
+            answer = choices[0].get("message", {}).get("content", "")
+            if not answer:
+                print("Error: Empty answer from LLM", file=sys.stderr)
+                sys.exit(1)
+
+            return answer
 
     except httpx.TimeoutException:
         print("Error: LLM request timed out (60s)", file=sys.stderr)
-        return {"content": "Error: Timeout", "tool_calls": []}
+        sys.exit(1)
     except httpx.HTTPError as e:
         print(f"Error: HTTP error: {e}", file=sys.stderr)
         if hasattr(e, "response") and e.response:
@@ -505,10 +501,14 @@ def main() -> None:
 
     print(f"Question: {question}", file=sys.stderr)
 
-    # Run agentic loop
-    result = run_agentic_loop(question, config)
+    # Call LLM
+    answer = call_lllm(question, config)
 
     # Output JSON to stdout
+    result = {
+        "answer": answer,
+        "tool_calls": [],
+    }
     print(json.dumps(result))
 
 
