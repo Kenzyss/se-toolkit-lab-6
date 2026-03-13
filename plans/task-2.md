@@ -6,9 +6,9 @@ Extend the agent from Task 1 with two tools (`read_file`, `list_files`) and impl
 
 ## LLM Provider
 
-**Provider:** OpenRouter  
-**Model:** `meta-llama/llama-3.3-70b-instruct:free`  
-**API Base:** `https://openrouter.ai/api/v1`
+**Provider:** Qwen Code API (on VM)  
+**Model:** `qwen3-coder-plus`  
+**API Base:** `http://10.93.25.198:42005/v1`
 
 ## Tool Definitions
 

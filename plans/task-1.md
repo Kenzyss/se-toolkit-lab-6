@@ -2,16 +2,15 @@
 
 ## LLM Provider
 
-**Provider:** OpenRouter  
-**Model:** `meta-llama/llama-3.3-70b-instruct:free`  
-**API Base:** `https://openrouter.ai/api/v1`
+**Provider:** Qwen Code API (on VM)  
+**Model:** `qwen3-coder-plus`  
+**API Base:** `http://10.93.25.198:42005/v1`
 
-**Why OpenRouter:**
-- Free tier available (50 requests/day)
-- No VM setup required
-- OpenAI-compatible API
-
-**Note:** Free models have rate limits. For production use, consider Qwen Code API (1000 requests/day).
+**Why Qwen Code API:**
+- 1000 free requests per day
+- Available in Russia
+- No credit card required
+- Already deployed on the VM
 
 ## Architecture
 
@@ -35,7 +34,7 @@
 ### Data Flow
 
 ```
-Command line → agent.py → httpx → OpenRouter API → LLM → JSON response → stdout
+Command line → agent.py → httpx → Qwen Code API → LLM → JSON response → stdout
                               ↓
                           stderr (debug logs)
 ```
@@ -68,11 +67,11 @@ One regression test (`tests/test_agent.py`):
 
 ## Implementation Steps
 
-1. Create `.env.agent.secret` with OpenRouter credentials
+1. Create `.env.agent.secret` with Qwen Code API credentials
 2. Create `agent.py` with:
    - Argument parsing (`sys.argv`)
-   - Environment loading (`python-dotenv` or manual)
-   - HTTP request to OpenRouter
+   - Environment loading (`python-dotenv`)
+   - HTTP request to LLM API
    - JSON output formatting
 3. Create `AGENT.md` documentation
 4. Create `tests/test_agent.py` regression test
